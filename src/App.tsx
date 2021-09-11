@@ -229,11 +229,11 @@ const App: React.FC = () => {
           }
         }
         for (let i = 0; i < openList.length; i++) {
-          openList[i].draw(context, "#00FF00", TILE_WIDTH, TILE_HEIGHT);
+          openList[i].draw(context, "grey", TILE_WIDTH, TILE_HEIGHT);
         }
 
         for (let i = 0; i < closedList.length; i++) {
-          closedList[i].draw(context, "#FF0000", TILE_WIDTH, TILE_HEIGHT);
+          closedList[i].draw(context, "purple", TILE_WIDTH, TILE_HEIGHT);
         }
       }, FPS);
     }
