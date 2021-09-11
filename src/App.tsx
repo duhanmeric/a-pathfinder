@@ -73,8 +73,8 @@ const App: React.FC = () => {
   const COLS = 21;
   const ROWS = 21;
   const FPS = 1000 / 60;
-  const CANVAS_WIDTH = 400;
-  const CANVAS_HEIGHT = 400;
+  const CANVAS_WIDTH = 640;
+  const CANVAS_HEIGHT = 640;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let gameInt = useRef<number | null>(null);
   let grid: Cell[][] = useMemo(() => new Array(COLS), []);
@@ -102,7 +102,6 @@ const App: React.FC = () => {
   start = grid[0][0];
   end = grid[COLS - 1][ROWS - 1];
   openList.push(start);
-  console.log(start);
 
   const removeFromArray = (arr: Cell[], el: Cell) => {
     for (let i = arr.length - 1; i >= 0; i--) {
