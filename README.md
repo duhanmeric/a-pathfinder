@@ -1,6 +1,10 @@
 # A\* Pathfinder algorithm
 
-## Features
+## Video
+
+`Coming Soon`
+
+## Coming Soon
 
 You can select your start and end node.
 Better visualizing.
