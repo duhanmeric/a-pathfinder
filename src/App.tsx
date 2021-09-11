@@ -8,6 +8,8 @@ class Cell {
   h: number;
   neighbors: Cell[];
   previous: Cell | undefined;
+  isStartNode: boolean;
+  isEndNode: boolean;
 
   constructor(i: number, j: number) {
     this.i = i;
@@ -17,6 +19,8 @@ class Cell {
     this.h = 0;
     this.neighbors = [];
     this.previous = undefined;
+    this.isStartNode = false;
+    this.isEndNode = false;
   }
 
   addneighbors(grid: Cell[][], COLS: number, ROWS: number) {
@@ -35,19 +39,22 @@ class Cell {
       this.neighbors.push(grid[i][j - 1]);
     }
 
-    if (i > 0 && j < ROWS - 1) {
-      this.neighbors.push(grid[i - 1][j + 1]);
-    }
+    // DIAGONAL
+
     if (i > 0 && j > 0) {
-      this.neighbors.push(grid[i - 1][j - 1]);
+      this.neighbors.push(grid[i - 1][j - 1]); // up left
+    }
+
+    if (i < COLS - 1 && j > 0) {
+      this.neighbors.push(grid[i + 1][j - 1]); // down right
     }
 
     if (i > 0 && j < ROWS - 1) {
-      this.neighbors.push(grid[i - 1][j + 1]);
+      this.neighbors.push(grid[i - 1][j + 1]); // up right
     }
 
     if (i < COLS - 1 && j < ROWS - 1) {
-      this.neighbors.push(grid[i + 1][j + 1]);
+      this.neighbors.push(grid[i + 1][j + 1]); // up right
     }
   }
 
@@ -58,7 +65,13 @@ class Cell {
     tile_height: number
   ) {
     if (ctx) {
-      ctx.fillStyle = color;
+      if (this.isStartNode) {
+        ctx.fillStyle = "green";
+      } else if (this.isEndNode) {
+        ctx.fillStyle = "red";
+      } else {
+        ctx.fillStyle = color;
+      }
       ctx.fillRect(
         this.i * tile_width,
         this.j * tile_height,
@@ -70,18 +83,19 @@ class Cell {
 }
 
 const App: React.FC = () => {
-  const COLS = 21;
-  const ROWS = 21;
+  const COLS = 25;
+  const ROWS = 25;
   const FPS = 1000 / 60;
-  const CANVAS_WIDTH = 640;
-  const CANVAS_HEIGHT = 640;
+  const CANVAS_WIDTH = 400;
+  const CANVAS_HEIGHT = 400;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let gameInt = useRef<number | null>(null);
   let grid: Cell[][] = useMemo(() => new Array(COLS), []);
   let openList: Cell[] = useMemo(() => [], []);
   let closedList: Cell[] = useMemo(() => [], []);
-  let start: Cell;
-  let end: Cell;
+  let endRef = useRef<Cell>();
+  let startRef = useRef<Cell>();
+  let isStarted = false;
 
   for (let i = 0; i < COLS; i++) {
     grid[i] = new Array<Cell>(ROWS);
@@ -99,10 +113,6 @@ const App: React.FC = () => {
     }
   }
 
-  start = grid[0][0];
-  end = grid[COLS - 1][ROWS - 1];
-  openList.push(start);
-
   const removeFromArray = (arr: Cell[], el: Cell) => {
     for (let i = arr.length - 1; i >= 0; i--) {
       if (arr[i] === el) {
@@ -116,65 +126,94 @@ const App: React.FC = () => {
     return d;
   };
 
+  const findPath = () => {
+    isStarted = true;
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
+    let newEnd = endRef.current as Cell;
+    let newStart = startRef.current as Cell;
     let path: Cell[] = [];
+    let isStartNodeCount = 0;
+
     if (canvas) {
       let TILE_WIDTH = Math.floor(CANVAS_WIDTH / COLS);
       let TILE_HEIGHT = Math.floor(CANVAS_HEIGHT / ROWS);
 
       const context = canvas.getContext("2d");
-
+      canvas.addEventListener("click", function detectStartNode(e) {
+        isStartNodeCount++;
+        if (isStartNodeCount === 1) {
+          grid[Math.floor(e.offsetX / TILE_WIDTH)][
+            Math.floor(e.offsetY / TILE_WIDTH)
+          ].isStartNode = true;
+          newStart =
+            grid[Math.floor(e.offsetX / TILE_WIDTH)][
+              Math.floor(e.offsetY / TILE_WIDTH)
+            ];
+          openList.push(newStart);
+        } else if (isStartNodeCount === 2) {
+          grid[Math.floor(e.offsetX / TILE_WIDTH)][
+            Math.floor(e.offsetY / TILE_WIDTH)
+          ].isEndNode = true;
+          newEnd =
+            grid[Math.floor(e.offsetX / TILE_WIDTH)][
+              Math.floor(e.offsetY / TILE_WIDTH)
+            ];
+        }
+      });
       gameInt.current = window.setInterval(() => {
-        if (openList.length > 0) {
-          let winner = 0;
+        if (isStarted && newStart && newEnd) {
+          if (openList.length > 0) {
+            let winner = 0;
 
-          for (let i = 0; i < openList.length; i++) {
-            if (openList[i].f < openList[winner].f) {
-              winner = i;
-            }
-          }
-
-          let current = openList[winner];
-
-          if (openList[winner] === end) {
-            let temp = current;
-            path.push(temp);
-            while (temp.previous) {
-              path.push(temp.previous);
-              temp = temp.previous;
-            }
-            console.log("done");
-          } else {
-            removeFromArray(openList, current);
-            closedList.push(current);
-          }
-
-          let neighbors = current.neighbors;
-
-          for (let i = 0; i < neighbors.length; i++) {
-            let neighbor = neighbors[i];
-
-            if (!closedList.includes(neighbor)) {
-              let tempG = current.g + 1;
-
-              if (openList.includes(neighbor)) {
-                if (tempG < neighbor.g) {
-                  neighbor.g = tempG;
-                }
-              } else {
-                neighbor.g = tempG;
-                openList.push(neighbor);
+            for (let i = 0; i < openList.length; i++) {
+              if (openList[i].f < openList[winner].f) {
+                winner = i;
               }
-
-              neighbor.h = heuristic(neighbor, end);
-              neighbor.f = neighbor.g + neighbor.h;
-              neighbor.previous = current;
             }
+
+            let current = openList[winner];
+
+            if (openList[winner] === newEnd) {
+              let temp = current;
+              path.push(temp);
+              while (temp.previous) {
+                path.push(temp.previous);
+                temp = temp.previous;
+              }
+            } else {
+              removeFromArray(openList, current);
+              closedList.push(current);
+            }
+
+            let neighbors = current.neighbors;
+
+            for (let i = 0; i < neighbors.length; i++) {
+              let neighbor = neighbors[i];
+
+              if (!closedList.includes(neighbor)) {
+                let tempG = current.g + 1;
+
+                if (openList.includes(neighbor)) {
+                  if (tempG < neighbor.g) {
+                    neighbor.g = tempG;
+                  }
+                } else {
+                  neighbor.g = tempG;
+                  openList.push(neighbor);
+                }
+
+                neighbor.h = heuristic(neighbor, newEnd);
+                neighbor.f = neighbor.g + neighbor.h;
+                neighbor.previous = current;
+              }
+            }
+          } else {
+            // no solution
+            console.log("no solution");
           }
-        } else {
-          // no solution
-          console.log("no solution");
         }
 
         // grid cizim
@@ -184,6 +223,11 @@ const App: React.FC = () => {
           }
         }
 
+        if (isStarted) {
+          for (let i = 0; i < path.length; i++) {
+            path[i].draw(context, "#0000FF", TILE_WIDTH, TILE_HEIGHT);
+          }
+        }
         for (let i = 0; i < openList.length; i++) {
           openList[i].draw(context, "#00FF00", TILE_WIDTH, TILE_HEIGHT);
         }
@@ -191,16 +235,13 @@ const App: React.FC = () => {
         for (let i = 0; i < closedList.length; i++) {
           closedList[i].draw(context, "#FF0000", TILE_WIDTH, TILE_HEIGHT);
         }
-
-        for (let i = 0; i < path.length; i++) {
-          path[i].draw(context, "#0000FF", TILE_WIDTH, TILE_HEIGHT);
-        }
       }, FPS);
     }
-  }, [FPS, end, grid, openList, closedList]);
+  }, [FPS, grid, openList, closedList, isStarted]);
 
   return (
     <div className="App">
+      <button onClick={findPath}>Start</button>
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
