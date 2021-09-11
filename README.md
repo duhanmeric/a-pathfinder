@@ -10,10 +10,12 @@
 
 ## Featured
 
-You can select your start and end node!
+You can select your start and end node.
+You can change the size of the square.
+Better visualizing.
+Random obstacles
 
 ## Coming Soon
 
-Better visualizing.
-There will be a runner on the grid. With that way you dont need to keep track of colors.
 You can add walls (obstacles).
+There will be a runner on the grid. With that way you dont need to keep track of colors.

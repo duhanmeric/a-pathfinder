@@ -10,6 +10,7 @@ class Cell {
   previous: Cell | undefined;
   isStartNode: boolean;
   isEndNode: boolean;
+  wall: boolean;
 
   constructor(i: number, j: number) {
     this.i = i;
@@ -21,6 +22,11 @@ class Cell {
     this.previous = undefined;
     this.isStartNode = false;
     this.isEndNode = false;
+    this.wall = false;
+    let randomwall = Math.random();
+    if (randomwall < 0.5) {
+      this.wall = true;
+    }
   }
 
   addneighbors(grid: Cell[][], COLS: number, ROWS: number) {
@@ -69,6 +75,8 @@ class Cell {
         ctx.fillStyle = "green";
       } else if (this.isEndNode) {
         ctx.fillStyle = "red";
+      } else if (this.wall) {
+        ctx.fillStyle = "black";
       } else {
         ctx.fillStyle = color;
       }
@@ -83,14 +91,13 @@ class Cell {
 }
 
 const App: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   let sizeFromLS = localStorage.getItem("sizes");
   const COLS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
   const ROWS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
   const FPS = 1000 / 30;
   const CANVAS_WIDTH = 640;
   const CANVAS_HEIGHT = 640;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  let gameInt = useRef<number | null>(null);
   let grid: Cell[][] = useMemo(() => new Array(COLS), [COLS]);
   let openList: Cell[] = useMemo(() => [], []);
   let closedList: Cell[] = useMemo(() => [], []);
@@ -152,6 +159,7 @@ const App: React.FC = () => {
     let newStart = startRef.current as Cell;
     let path: Cell[] = [];
     let isStartNodeCount = 0;
+    let gameInt: NodeJS.Timer;
 
     if (canvas) {
       let TILE_WIDTH = Math.floor(CANVAS_WIDTH / COLS);
@@ -159,27 +167,34 @@ const App: React.FC = () => {
 
       const context = canvas.getContext("2d");
       canvas.addEventListener("click", function detectStartNode(e) {
-        isStartNodeCount++;
-        if (isStartNodeCount === 1) {
-          grid[Math.floor(e.offsetX / TILE_WIDTH)][
+        if (
+          !grid[Math.floor(e.offsetX / TILE_WIDTH)][
             Math.floor(e.offsetY / TILE_WIDTH)
-          ].isStartNode = true;
-          newStart =
+          ].wall
+        ) {
+          isStartNodeCount++;
+          if (isStartNodeCount === 1) {
             grid[Math.floor(e.offsetX / TILE_WIDTH)][
               Math.floor(e.offsetY / TILE_WIDTH)
-            ];
-          openList.push(newStart);
-        } else if (isStartNodeCount === 2) {
-          grid[Math.floor(e.offsetX / TILE_WIDTH)][
-            Math.floor(e.offsetY / TILE_WIDTH)
-          ].isEndNode = true;
-          newEnd =
+            ].isStartNode = true;
+            newStart =
+              grid[Math.floor(e.offsetX / TILE_WIDTH)][
+                Math.floor(e.offsetY / TILE_WIDTH)
+              ];
+            openList.push(newStart);
+          } else if (isStartNodeCount === 2) {
             grid[Math.floor(e.offsetX / TILE_WIDTH)][
               Math.floor(e.offsetY / TILE_WIDTH)
-            ];
+            ].isEndNode = true;
+            newEnd =
+              grid[Math.floor(e.offsetX / TILE_WIDTH)][
+                Math.floor(e.offsetY / TILE_WIDTH)
+              ];
+          }
         }
       });
-      gameInt.current = window.setInterval(() => {
+
+      gameInt = setInterval(() => {
         if (isStarted && newStart && newEnd) {
           if (openList.length > 0) {
             let winner = 0;
@@ -209,7 +224,7 @@ const App: React.FC = () => {
             for (let i = 0; i < neighbors.length; i++) {
               let neighbor = neighbors[i];
 
-              if (!closedList.includes(neighbor)) {
+              if (!closedList.includes(neighbor) && !neighbor.wall) {
                 let tempG = current.g + 1;
 
                 if (openList.includes(neighbor)) {
@@ -229,6 +244,9 @@ const App: React.FC = () => {
           } else {
             // no solution
             console.log("no solution");
+            clearInterval(gameInt);
+            alert("No solution");
+            return;
           }
         }
 
