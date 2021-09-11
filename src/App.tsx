@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 class Cell {
   i: number;
@@ -24,7 +24,7 @@ class Cell {
     this.isEndNode = false;
     this.wall = false;
     let randomwall = Math.random();
-    if (randomwall < 0.5) {
+    if (randomwall < 0.4) {
       this.wall = true;
     }
   }
@@ -48,19 +48,19 @@ class Cell {
     // DIAGONAL
 
     if (i > 0 && j > 0) {
-      this.neighbors.push(grid[i - 1][j - 1]); // up left
+      this.neighbors.push(grid[i - 1][j - 1]); // down left
     }
 
     if (i < COLS - 1 && j > 0) {
-      this.neighbors.push(grid[i + 1][j - 1]); // down right
+      this.neighbors.push(grid[i + 1][j - 1]); // up right
     }
 
     if (i > 0 && j < ROWS - 1) {
-      this.neighbors.push(grid[i - 1][j + 1]); // up right
+      this.neighbors.push(grid[i - 1][j + 1]); // up left
     }
 
     if (i < COLS - 1 && j < ROWS - 1) {
-      this.neighbors.push(grid[i + 1][j + 1]); // up right
+      this.neighbors.push(grid[i + 1][j + 1]); // down right
     }
   }
 

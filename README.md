@@ -18,4 +18,4 @@ Random obstacles
 ## Coming Soon
 
 You can add walls (obstacles).
-There will be a runner on the grid. With that way you dont need to keep track of colors.
+There will be a runner on the grid. With that way you dont need to follow the colors.

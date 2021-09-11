@@ -25,6 +25,7 @@ code {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 100px 30px;
 }
 
 #control {
