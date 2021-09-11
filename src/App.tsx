@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 class Cell {
   i: number;
@@ -83,14 +83,15 @@ class Cell {
 }
 
 const App: React.FC = () => {
-  const COLS = 25;
-  const ROWS = 25;
+  let sizeFromLS = localStorage.getItem("sizes");
+  const COLS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
+  const ROWS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
   const FPS = 1000 / 30;
-  const CANVAS_WIDTH = 400;
-  const CANVAS_HEIGHT = 400;
+  const CANVAS_WIDTH = 640;
+  const CANVAS_HEIGHT = 640;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let gameInt = useRef<number | null>(null);
-  let grid: Cell[][] = useMemo(() => new Array(COLS), []);
+  let grid: Cell[][] = useMemo(() => new Array(COLS), [COLS]);
   let openList: Cell[] = useMemo(() => [], []);
   let closedList: Cell[] = useMemo(() => [], []);
   let endRef = useRef<Cell>();
@@ -121,13 +122,28 @@ const App: React.FC = () => {
     }
   };
 
-  const heuristic = (a: Cell, b: Cell) => {
+  const heuristic = (a: Cell, b: Cell): number => {
     let d = Math.abs(a.i - b.i) + Math.abs(a.j - b.j);
     return d;
   };
 
   const findPath = () => {
     isStarted = true;
+  };
+
+  let tempSize: number;
+
+  const handleSquareSize = (e: React.ChangeEvent<HTMLInputElement>) => {
+    tempSize = parseInt(e.target.value);
+  };
+
+  const handleSaveSizes = () => {
+    if (isNaN(tempSize)) {
+      alert("Invalid Size");
+      return false;
+    }
+    localStorage.setItem("sizes", tempSize.toString());
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -237,11 +253,28 @@ const App: React.FC = () => {
         }
       }, FPS);
     }
-  }, [FPS, grid, openList, closedList, isStarted]);
+  }, [FPS, grid, openList, closedList, isStarted, COLS, ROWS]);
 
   return (
     <div className="App">
-      <button onClick={findPath}>Start</button>
+      <div id="control">
+        <div id="setSquare">
+          <label htmlFor="square">Set Rows and Cols</label>
+          <input
+            onChange={handleSquareSize}
+            type="text"
+            placeholder="e.g 20"
+            name="square"
+            id="square"
+          />
+          <button type="submit" id="saveBtn" onClick={handleSaveSizes}>
+            Save
+          </button>
+        </div>
+        <button id="startGame" onClick={findPath}>
+          Start
+        </button>
+      </div>
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
