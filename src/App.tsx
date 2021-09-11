@@ -85,7 +85,7 @@ class Cell {
 const App: React.FC = () => {
   const COLS = 25;
   const ROWS = 25;
-  const FPS = 1000 / 60;
+  const FPS = 1000 / 30;
   const CANVAS_WIDTH = 400;
   const CANVAS_HEIGHT = 400;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -223,14 +223,14 @@ const App: React.FC = () => {
           }
         }
 
-        if (isStarted) {
-          for (let i = 0; i < path.length; i++) {
-            path[i].draw(context, "#0000FF", TILE_WIDTH, TILE_HEIGHT);
-          }
-        }
-        for (let i = 0; i < openList.length; i++) {
-          openList[i].draw(context, "grey", TILE_WIDTH, TILE_HEIGHT);
-        }
+        // if (isStarted) {
+        //   for (let i = 0; i < path.length; i++) {
+        //     path[i].draw(context, "#0000FF", TILE_WIDTH, TILE_HEIGHT);
+        //   }
+        // }
+        // for (let i = 0; i < openList.length; i++) {
+        //   openList[i].draw(context, "grey", TILE_WIDTH, TILE_HEIGHT);
+        // }
 
         for (let i = 0; i < closedList.length; i++) {
           closedList[i].draw(context, "purple", TILE_WIDTH, TILE_HEIGHT);

@@ -6,7 +6,7 @@
 
 ## Color Introduction
 
-![alt text](https://i.hizliresim.com/t1ys9g9.png)
+![alt text](https://i.hizliresim.com/o0r4ysm.png)
 
 ## Featured
 
