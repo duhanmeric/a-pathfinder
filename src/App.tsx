@@ -95,15 +95,24 @@ const App: React.FC = () => {
               ];
             openList.push(newStart);
           } else if (isStartNodeCount === 2) {
-            grid[Math.floor(e.offsetX / TILE_WIDTH)][
-              Math.floor(e.offsetY / TILE_WIDTH)
-            ].isEndNode = true;
-            newEnd =
+            if (
               grid[Math.floor(e.offsetX / TILE_WIDTH)][
                 Math.floor(e.offsetY / TILE_WIDTH)
-              ];
+              ] === newStart
+            ) {
+              isStartNodeCount = 1;
+            } else {
+              grid[Math.floor(e.offsetX / TILE_WIDTH)][
+                Math.floor(e.offsetY / TILE_WIDTH)
+              ].isEndNode = true;
+              newEnd =
+                grid[Math.floor(e.offsetX / TILE_WIDTH)][
+                  Math.floor(e.offsetY / TILE_WIDTH)
+                ];
+            }
           }
         }
+        console.log(isStartNodeCount);
       });
 
       gameInt = setInterval(() => {
