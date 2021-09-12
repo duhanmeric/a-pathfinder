@@ -126,6 +126,7 @@ const App: React.FC = () => {
                 path.push(temp.previous);
                 temp = temp.previous;
               }
+              clearInterval(gameInt);
               alert("Done");
               return;
             } else {
