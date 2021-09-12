@@ -126,6 +126,7 @@ const App: React.FC = () => {
                 path.push(temp.previous);
                 temp = temp.previous;
               }
+              alert("Done");
               return;
             } else {
               removeFromArray(openList, current);
@@ -156,9 +157,8 @@ const App: React.FC = () => {
             }
           } else {
             // no solution
-            console.log("no solution");
             clearInterval(gameInt);
-            alert("No solution");
+            alert("No solution for these points");
             return;
           }
         }
