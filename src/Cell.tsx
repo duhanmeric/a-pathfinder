@@ -9,9 +9,8 @@ export default class Cell {
   isStartNode: boolean;
   isEndNode: boolean;
   wall: boolean;
-  isChecked: boolean;
 
-  constructor(i: number, j: number, isChecked: boolean) {
+  constructor(i: number, j: number) {
     this.i = i;
     this.j = j;
     this.f = 0;
@@ -22,9 +21,9 @@ export default class Cell {
     this.isStartNode = false;
     this.isEndNode = false;
     this.wall = false;
-    this.isChecked = isChecked;
+
     let randomwall = Math.random();
-    if (this.isChecked && randomwall < 0.4) {
+    if (randomwall < 0.4) {
       this.wall = true;
     }
   }

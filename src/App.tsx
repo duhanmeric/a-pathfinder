@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import Cell from "./Cell";
 
 const App: React.FC = () => {
-  const [isChecked, setIsChecked] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let sizeFromLS = localStorage.getItem("sizes");
   const COLS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
@@ -23,7 +22,7 @@ const App: React.FC = () => {
 
   for (let i = 0; i < COLS; i++) {
     for (let j = 0; j < ROWS; j++) {
-      grid[i][j] = new Cell(i, j, isChecked);
+      grid[i][j] = new Cell(i, j);
     }
   }
 
@@ -65,17 +64,13 @@ const App: React.FC = () => {
     window.location.reload();
   };
 
-  const handleRandomObstacles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(e.target.checked);
-  };
-
   useEffect(() => {
     const canvas = canvasRef.current;
     let newEnd = endRef.current as Cell;
     let newStart = startRef.current as Cell;
     let path: Cell[] = [];
-    let isStartNodeCount = 0;
     let gameInt: NodeJS.Timer;
+    let isStartNodeCount = 0;
 
     if (canvas) {
       let TILE_WIDTH = Math.floor(CANVAS_WIDTH / COLS);
@@ -93,6 +88,7 @@ const App: React.FC = () => {
             grid[Math.floor(e.offsetX / TILE_WIDTH)][
               Math.floor(e.offsetY / TILE_WIDTH)
             ].isStartNode = true;
+
             newStart =
               grid[Math.floor(e.offsetX / TILE_WIDTH)][
                 Math.floor(e.offsetY / TILE_WIDTH)
@@ -106,10 +102,6 @@ const App: React.FC = () => {
               grid[Math.floor(e.offsetX / TILE_WIDTH)][
                 Math.floor(e.offsetY / TILE_WIDTH)
               ];
-          } else {
-            grid[Math.floor(e.offsetX / TILE_WIDTH)][
-              Math.floor(e.offsetY / TILE_WIDTH)
-            ].wall = true;
           }
         }
       });
@@ -134,6 +126,7 @@ const App: React.FC = () => {
                 path.push(temp.previous);
                 temp = temp.previous;
               }
+              return;
             } else {
               removeFromArray(openList, current);
               closedList.push(current);
@@ -182,7 +175,7 @@ const App: React.FC = () => {
         }
       }, FPS);
     }
-  }, [FPS, grid, openList, closedList, isStarted, COLS, ROWS, isChecked]);
+  }, [FPS, grid, openList, closedList, isStarted, COLS, ROWS]);
 
   return (
     <div className="App">
@@ -199,22 +192,6 @@ const App: React.FC = () => {
           <button type="submit" id="saveBtn" onClick={handleSaveSizes}>
             Save
           </button>
-        </div>
-        <div
-          id="setRandomObstacles"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <input
-            onChange={handleRandomObstacles}
-            type="checkbox"
-            name="obstacle"
-            id="obstacle"
-          />
-          <p style={{ margin: 0, color: "white" }}>random obstacles</p>
         </div>
         <button id="startGame" onClick={findPath}>
           Start
