@@ -203,6 +203,12 @@ const App: React.FC = () => {
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
       ></canvas>
+      <a
+        style={{ color: "white", fontSize: "18px" }}
+        href="https://github.com/duhanmeric/a-pathfinder"
+      >
+        Github
+      </a>
     </div>
   );
 };
