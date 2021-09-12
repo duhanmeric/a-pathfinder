@@ -1,96 +1,8 @@
-import React, { useEffect, useMemo, useRef } from "react";
-
-class Cell {
-  i: number;
-  j: number;
-  f: number;
-  g: number;
-  h: number;
-  neighbors: Cell[];
-  previous: Cell | undefined;
-  isStartNode: boolean;
-  isEndNode: boolean;
-  wall: boolean;
-
-  constructor(i: number, j: number) {
-    this.i = i;
-    this.j = j;
-    this.f = 0;
-    this.g = 0;
-    this.h = 0;
-    this.neighbors = [];
-    this.previous = undefined;
-    this.isStartNode = false;
-    this.isEndNode = false;
-    this.wall = false;
-    let randomwall = Math.random();
-    if (randomwall < 0.4) {
-      this.wall = true;
-    }
-  }
-
-  addneighbors(grid: Cell[][], COLS: number, ROWS: number) {
-    let i = this.i;
-    let j = this.j;
-    if (i < COLS - 1) {
-      this.neighbors.push(grid[i + 1][j]);
-    }
-    if (i > 0) {
-      this.neighbors.push(grid[i - 1][j]);
-    }
-    if (j < ROWS - 1) {
-      this.neighbors.push(grid[i][j + 1]);
-    }
-    if (j > 0) {
-      this.neighbors.push(grid[i][j - 1]);
-    }
-
-    // DIAGONAL
-
-    if (i > 0 && j > 0) {
-      this.neighbors.push(grid[i - 1][j - 1]); // down left
-    }
-
-    if (i < COLS - 1 && j > 0) {
-      this.neighbors.push(grid[i + 1][j - 1]); // up right
-    }
-
-    if (i > 0 && j < ROWS - 1) {
-      this.neighbors.push(grid[i - 1][j + 1]); // up left
-    }
-
-    if (i < COLS - 1 && j < ROWS - 1) {
-      this.neighbors.push(grid[i + 1][j + 1]); // down right
-    }
-  }
-
-  draw(
-    ctx: CanvasRenderingContext2D | null,
-    color: string,
-    tile_width: number,
-    tile_height: number
-  ) {
-    if (ctx) {
-      if (this.isStartNode) {
-        ctx.fillStyle = "green";
-      } else if (this.isEndNode) {
-        ctx.fillStyle = "red";
-      } else if (this.wall) {
-        ctx.fillStyle = "black";
-      } else {
-        ctx.fillStyle = color;
-      }
-      ctx.fillRect(
-        this.i * tile_width,
-        this.j * tile_height,
-        tile_width - 1,
-        tile_height - 1
-      );
-    }
-  }
-}
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Cell from "./Cell";
 
 const App: React.FC = () => {
+  const [isChecked, setIsChecked] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let sizeFromLS = localStorage.getItem("sizes");
   const COLS = sizeFromLS !== null ? parseInt(sizeFromLS) : 15;
@@ -111,7 +23,7 @@ const App: React.FC = () => {
 
   for (let i = 0; i < COLS; i++) {
     for (let j = 0; j < ROWS; j++) {
-      grid[i][j] = new Cell(i, j);
+      grid[i][j] = new Cell(i, j, isChecked);
     }
   }
 
@@ -144,13 +56,17 @@ const App: React.FC = () => {
     tempSize = parseInt(e.target.value);
   };
 
-  const handleSaveSizes = () => {
+  const handleSaveSizes = (): false | void => {
     if (isNaN(tempSize)) {
       alert("Invalid Size");
       return false;
     }
     localStorage.setItem("sizes", tempSize.toString());
     window.location.reload();
+  };
+
+  const handleRandomObstacles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsChecked(e.target.checked);
   };
 
   useEffect(() => {
@@ -190,6 +106,10 @@ const App: React.FC = () => {
               grid[Math.floor(e.offsetX / TILE_WIDTH)][
                 Math.floor(e.offsetY / TILE_WIDTH)
               ];
+          } else {
+            grid[Math.floor(e.offsetX / TILE_WIDTH)][
+              Math.floor(e.offsetY / TILE_WIDTH)
+            ].wall = true;
           }
         }
       });
@@ -257,21 +177,12 @@ const App: React.FC = () => {
           }
         }
 
-        // if (isStarted) {
-        //   for (let i = 0; i < path.length; i++) {
-        //     path[i].draw(context, "#0000FF", TILE_WIDTH, TILE_HEIGHT);
-        //   }
-        // }
-        // for (let i = 0; i < openList.length; i++) {
-        //   openList[i].draw(context, "grey", TILE_WIDTH, TILE_HEIGHT);
-        // }
-
         for (let i = 0; i < closedList.length; i++) {
           closedList[i].draw(context, "purple", TILE_WIDTH, TILE_HEIGHT);
         }
       }, FPS);
     }
-  }, [FPS, grid, openList, closedList, isStarted, COLS, ROWS]);
+  }, [FPS, grid, openList, closedList, isStarted, COLS, ROWS, isChecked]);
 
   return (
     <div className="App">
@@ -288,6 +199,22 @@ const App: React.FC = () => {
           <button type="submit" id="saveBtn" onClick={handleSaveSizes}>
             Save
           </button>
+        </div>
+        <div
+          id="setRandomObstacles"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <input
+            onChange={handleRandomObstacles}
+            type="checkbox"
+            name="obstacle"
+            id="obstacle"
+          />
+          <p style={{ margin: 0, color: "white" }}>random obstacles</p>
         </div>
         <button id="startGame" onClick={findPath}>
           Start

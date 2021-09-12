@@ -14,8 +14,8 @@ You can select your start and end node.
 You can change the size of the square.
 Better visualizing.
 Random obstacles
+You can add walls (obstacles).
 
 ## Coming Soon
 
-You can add walls (obstacles).
 There will be a runner on the grid. With that way you dont need to follow the colors.
