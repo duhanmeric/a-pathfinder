@@ -2,7 +2,7 @@
 
 ## Video
 
-`Coming Soon`
+https://user-images.githubusercontent.com/75217465/133139742-971a05b7-757f-4600-a594-33eb0ba02589.mp4
 
 ## Color Introduction
 
